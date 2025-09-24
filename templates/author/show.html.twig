@@ -1,0 +1,15 @@
+{{nom |upper}}
+{#ceci un commentaire#}
+{% set A=4 %}
+{{A}}
+{% if 'Fabien' starts with 'F' %}
+    commence par F
+{% endif %}
+{% if 'Fabien' ends with 'n' %}
+finit par N
+{% endif %}
+
+<a href="{{path('Afficher')}}">lien1 </a>
+<a href="{{url('Afficher')}}"> lien2 </a>
+<img src="{{asset('assets/images/mm.png')}}" >
+    
