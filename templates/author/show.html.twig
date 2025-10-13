@@ -1,0 +1,8 @@
+{% extends 'base.html.twig' %}
+{% block title %}Auteur{% endblock %}
+{% block body %}
+<h1>{{ author.username }}</h1>
+<p>Email : {{ author.email }}</p>
+<p>Âge : {{ author.age }}</p>
+<a href="{{ path('app_author_index') }}">⬅ Retour</a>
+{% endblock %}
