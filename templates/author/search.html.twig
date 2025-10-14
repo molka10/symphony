@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Recherche des auteurs{% endblock %}
+
+{% block body %}
+<h1>Recherche des auteurs par nombre de livres</h1>
+
+{{ form_start(form) }}
+    {{ form_row(form.minBooks) }}
+    {{ form_row(form.maxBooks) }}
+    <button class="btn btn-primary mt-2">Rechercher</button>
+{{ form_end(form) }}
+
+{% if authors is not empty %}
+<table class="table mt-3">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Nombre de livres</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for a in authors %}
+        <tr>
+            <td>{{ a[0].id }}</td>
+            <td>{{ a[0].username }}</td>
+            <td>{{ a.nb_books }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% endblock %}

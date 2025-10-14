@@ -1,38 +1,65 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Liste des livres{% endblock %}
+{% block title %}Livres{% endblock %}
 
 {% block body %}
-<h1>📚 Liste des livres publiés</h1>
+<h1 style="text-align:center">Livres</h1>
 
-<p>
-    Livres publiés : {{ nbPublished }} |
-    Non publiés : {{ nbUnpublished }}
+{# Nombre de livres Romance #}
+<p style="text-align:center; font-weight:bold; color:blue;">
+    Nombre de livres Romance : {{ romanceCount }}
 </p>
 
-<a href="{{ path('app_book_new') }}">➕ Ajouter un livre</a>
+<p style="text-align:center">
+    <a href="{{ path('app_book_new') }}" class="btn btn-success">Nouveau livre</a>
 
-{% if books is empty %}
-    <p>Aucun livre publié pour l'instant.</p>
-{% else %}
-<table border="1" cellpadding="6">
-    <tr>
-        <th>Titre</th>
-        <th>Catégorie</th>
-        <th>Auteur</th>
-        <th>Actions</th>
-    </tr>
-    {% for b in books %}
+    {# Bouton pour supprimer tous les livres non publiés #}
+    <a href="{{ path('app_book_delete_unpublished') }}" class="btn btn-danger"
+       onclick="return confirm('Supprimer tous les livres non publiés ?');">
+       Supprimer les livres non publiés
+    </a>
+
+    {# Bouton pour afficher les livres entre 2014 et 2018 #}
+    <a href="{{ path('app_book_between_dates') }}" class="btn btn-info">
+        Voir les livres publiés entre 2014 et 2018
+    </a>
+</p>
+
+<table border="1" cellpadding="6" cellspacing="0" align="center">
+    <thead>
         <tr>
-            <td><a href="{{ path('app_book_show', {id: b.id}) }}">{{ b.title }}</a></td>
+            <th>REF</th>
+            <th>Titre</th>
+            <th>Catégorie</th>
+            <th>Date</th>
+            <th>Publié</th>
+            <th>Auteur</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for b in books %}
+        <tr>
+            <td>{{ b.id }}</td>
+            <td>{{ b.title }}</td>
             <td>{{ b.category }}</td>
-            <td>{{ b.author.username }}</td>
+            <td>{{ b.publicationDate ? b.publicationDate|date('Y-m-d') : '' }}</td>
+            <td>{{ b.enabled ? 'Oui' : 'Non' }}</td>
+            <td>{{ b.author ? b.author.username : '' }}</td>
             <td>
-                <a href="{{ path('app_book_edit', {id: b.id}) }}">✏️ Modifier</a> |
-                <a href="{{ path('app_book_delete', {id: b.id}) }}" onclick="return confirm('Supprimer ce livre ?')">🗑️ Supprimer</a>
+                <a href="{{ path('app_book_show', {id: b.id}) }}">Show</a>
+                <a href="{{ path('app_book_edit', {id: b.id}) }}">Edit</a>
+                <form method="post" action="{{ path('app_book_delete', {id: b.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ b.id) }}">
+                    <button type="submit">Delete</button>
+                </form>
             </td>
         </tr>
-    {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="7" style="text-align:center">Aucun livre trouvé</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
-{% endif %}
 {% endblock %}

@@ -1,10 +1,22 @@
 {% extends 'base.html.twig' %}
-{% block title %}Nouvel auteur{% endblock %}
+
+{% block title %}Ajouter un auteur{% endblock %}
+
 {% block body %}
-<h1>Ajouter un auteur</h1>
-{{ form_start(form) }}
-  {{ form_widget(form) }}
-  <button>Enregistrer</button>
-{{ form_end(form) }}
-<a href="{{ path('app_author_index') }}">⬅ Retour</a>
+    <h1 style="text-align:center;margin-bottom:16px;">Ajouter un auteur</h1>
+
+    
+
+    <div style="max-width:600px;margin:0 auto;">
+        {{ form_start(form) }}
+            {{ form_row(form.username) }}
+            {{ form_row(form.email) }}
+            {{ form_row(form.age) }}
+{{ form_row(form.nbBooks) }} {# <- Champ pour nombre de livres #}
+
+            <button type="submit">Enregistrer</button>
+        {{ form_end(form) }}
+    </div>
+
+    
 {% endblock %}

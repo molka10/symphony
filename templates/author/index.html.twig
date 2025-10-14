@@ -1,24 +1,61 @@
 {% extends 'base.html.twig' %}
-{% block title %}Auteurs{% endblock %}
+
+{% block title %}Liste des Auteurs{% endblock %}
+
 {% block body %}
-<h1>Auteurs</h1>
-<a href="{{ path('app_author_new') }}">+ Nouvel auteur</a>
-<table border="1" cellpadding="6">
-  <tr><th>ID</th><th>Nom</th><th>Email</th><th>Âge</th><th>Actions</th></tr>
-  {% for a in authors %}
-    <tr>
-      <td>{{ a.id }}</td>
-      <td><a href="{{ path('app_author_show', {id:a.id}) }}">{{ a.username }}</a></td>
-      <td>{{ a.email }}</td>
-      <td>{{ a.age }}</td>
-      <td>
-        <a href="{{ path('app_author_edit', {id:a.id}) }}">edit</a> |
-        <a href="{{ path('app_author_delete', {id:a.id}) }}"
-           onclick="return confirm('Supprimer ?');">delete</a>
-      </td>
-    </tr>
-  {% else %}
-    <tr><td colspan="5">Aucun auteur</td></tr>
-  {% endfor %}
+<h1 style="text-align:center;">Liste des Auteurs</h1>
+
+{# Zone de recherche par nombre de livres #}
+<form method="get" action="{{ path('app_author_list') }}" style="margin-bottom:20px; text-align:center;">
+    <label for="minBooks">Nombre de livres min :</label>
+    <input type="number" id="minBooks" name="minBooks" value="{{ app.request.get('minBooks') }}" min="0">
+
+    <label for="maxBooks">Nombre de livres max :</label>
+    <input type="number" id="maxBooks" name="maxBooks" value="{{ app.request.get('maxBooks') }}" min="0">
+
+    <button type="submit" class="btn btn-primary">Rechercher</button>
+</form>
+
+<table border="1" cellpadding="6" cellspacing="0" align="center">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Age</th>
+            <th>Nombre de livres</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for author in authors %}
+        <tr>
+            <td>{{ author.id }}</td>
+            <td>{{ author.username }}</td>
+            <td>{{ author.email }}</td>
+            <td>{{ author.age }}</td>
+            <td>{{ author.nbBooks }}</td>
+
+            <td>{{ author.nbBooks ?? author.books|length }}</td>
+            <td>
+                <a href="{{ path('app_author_show', {'id': author.id}) }}" class="btn btn-info">Voir</a>
+                <a href="{{ path('app_author_edit', {'id': author.id}) }}" class="btn btn-primary">Modifier</a>
+
+                <form method="post" action="{{ path('app_author_delete', {'id': author.id}) }}" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer cet auteur ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ author.id) }}">
+                    <button class="btn btn-danger">Supprimer</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="6" style="text-align:center;">Aucun auteur trouvé</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
+
+<p style="text-align:center; margin-top:20px;">
+    <a href="{{ path('app_author_new') }}" class="btn btn-success">Ajouter un auteur</a>
+</p>
 {% endblock %}

@@ -1,10 +1,8 @@
 <?php
-
 namespace App\Entity;
 
 use App\Repository\BookRepository;
 use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Author; // ✅ ajout important
 
 #[ORM\Entity(repositoryClass: BookRepository::class)]
 class Book
@@ -14,21 +12,23 @@ class Book
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 150)]
     private ?string $title = null;
 
-    #[ORM\Column]
-    private ?bool $published = null;
-
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 150)]
     private ?string $category = null;
 
-    #[ORM\Column]
-    private ?\DateTime $publication_date = null;
+    #[ORM\Column(type: 'date')]
+    private ?\DateTimeInterface $publicationDate = null;
 
-    #[ORM\ManyToOne(targetEntity: Author::class, inversedBy: 'books')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\Column(type: 'boolean')]
+    private bool $enabled = true;
+
+    #[ORM\ManyToOne(inversedBy: 'books')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Author $author = null;
+
+    // --- GETTERS & SETTERS ---
 
     public function getId(): ?int
     {
@@ -46,17 +46,6 @@ class Book
         return $this;
     }
 
-    public function isPublished(): ?bool
-    {
-        return $this->published;
-    }
-
-    public function setPublished(bool $published): static
-    {
-        $this->published = $published;
-        return $this;
-    }
-
     public function getCategory(): ?string
     {
         return $this->category;
@@ -68,14 +57,25 @@ class Book
         return $this;
     }
 
-    public function getPublicationDate(): ?\DateTime
+    public function getPublicationDate(): ?\DateTimeInterface
     {
-        return $this->publication_date;
+        return $this->publicationDate;
     }
 
-    public function setPublicationDate(\DateTime $publication_date): static
+    public function setPublicationDate(\DateTimeInterface $d): static
     {
-        $this->publication_date = $publication_date;
+        $this->publicationDate = $d;
+        return $this;
+    }
+
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
+    }
+
+    public function setEnabled(bool $enabled): static
+    {
+        $this->enabled = $enabled;
         return $this;
     }
 
@@ -84,9 +84,9 @@ class Book
         return $this->author;
     }
 
-    public function setAuthor(?Author $author): static
+    public function setAuthor(?Author $a): static
     {
-        $this->author = $author;
+        $this->author = $a;
         return $this;
     }
 }

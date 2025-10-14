@@ -1,8 +1,48 @@
+{# templates/author/list.html.twig #}
 {% extends 'base.html.twig' %}
-{% block title %}Auteur{% endblock %}
+
+{% block title %}Liste des Auteurs{% endblock %}
+
 {% block body %}
-<h1>{{ author.username }}</h1>
-<p>Email : {{ author.email }}</p>
-<p>Âge : {{ author.age }}</p>
-<a href="{{ path('app_author_index') }}">⬅ Retour</a>
+<h1>Liste des Auteurs</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Age</th>
+            <th>Nb Books</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for author in authors %}
+        <tr>
+            <td>{{ author.id }}</td>
+            <td>{{ author.username }}</td>
+            <td>{{ author.email }}</td>
+            <td>{{ author.age }}</td>
+            <td>{{ author.nbBooks }}</td>
+            <td>
+                {# Lien Edit #}
+                <a href="{{ path('app_author_edit', {'id': author.id}) }}" class="btn btn-primary">Edit</a>
+
+                {# Formulaire Delete sécurisé #}
+                <form method="post" action="{{ path('app_author_delete', {'id': author.id}) }}" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer cet auteur ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ author.id) }}">
+                    <button class="btn btn-danger">Supprimer</button>
+                </form>
+            </td>
+        </tr>
+    {% else %}
+        <tr>
+            <td colspan="6">Aucun auteur trouvé.</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<a href="{{ path('app_author_new') }}" class="btn btn-success">Ajouter un auteur</a>
 {% endblock %}

@@ -1,8 +1,9 @@
 <?php
-
 namespace App\Entity;
 
 use App\Repository\AuthorRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: AuthorRepository::class)]
@@ -13,17 +14,27 @@ class Author
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 100)]
     private ?string $username = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 150)]
     private ?string $email = null;
 
-    #[ORM\Column]
-    private ?int $age = null;
     #[ORM\Column(type: 'integer')]
-private ?int $nbBooks = 0;
+    private ?int $age = 0;
 
+    #[ORM\Column(type: 'integer')]
+    private int $nb_books = 0;
+
+    #[ORM\OneToMany(mappedBy: 'author', targetEntity: Book::class, cascade: ['persist', 'remove'])]
+    private Collection $books;
+
+    public function __construct()
+    {
+        $this->books = new ArrayCollection();
+    }
+
+    // --- Getters / Setters ---
 
     public function getId(): ?int
     {
@@ -38,7 +49,6 @@ private ?int $nbBooks = 0;
     public function setUsername(string $username): static
     {
         $this->username = $username;
-
         return $this;
     }
 
@@ -50,7 +60,6 @@ private ?int $nbBooks = 0;
     public function setEmail(string $email): static
     {
         $this->email = $email;
-
         return $this;
     }
 
@@ -62,18 +71,60 @@ private ?int $nbBooks = 0;
     public function setAge(int $age): static
     {
         $this->age = $age;
-
         return $this;
     }
-    public function getNbBooks(): ?int
-{
-    return $this->nbBooks;
-}
 
-public function setNbBooks(int $nbBooks): static
-{
-    $this->nbBooks = $nbBooks;
-    return $this;
-}
+    public function getNbBooks(): int
+    {
+        return $this->nb_books;
+    }
 
+    public function setNbBooks(int $nb_books): static
+    {
+        $this->nb_books = $nb_books;
+        return $this;
+    }
+
+    public function incrementNbBooks(): static
+    {
+        $this->nb_books++;
+        return $this;
+    }
+
+    public function decrementNbBooks(): static
+    {
+        if ($this->nb_books > 0) {
+            $this->nb_books--;
+        }
+        return $this;
+    }
+
+    public function getBooks(): Collection
+    {
+        return $this->books;
+    }
+
+    public function addBook(Book $book): static
+    {
+        if (!$this->books->contains($book)) {
+            $this->books->add($book);
+            $book->setAuthor($this);
+        }
+        return $this;
+    }
+
+    public function removeBook(Book $book): static
+    {
+        if ($this->books->removeElement($book)) {
+            if ($book->getAuthor() === $this) {
+                $book->setAuthor(null);
+            }
+        }
+        return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->username ?? '';
+    }
 }

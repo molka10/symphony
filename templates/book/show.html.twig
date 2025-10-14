@@ -5,9 +5,9 @@
 {% block body %}
 <h1>{{ book.title }}</h1>
 <p><strong>Catégorie :</strong> {{ book.category }}</p>
-<p><strong>Publié :</strong> {{ book.published ? 'Oui' : 'Non' }}</p>
+<p><strong>Publié :</strong> {{ book.enabled ? 'Oui' : 'Non' }}</p>
 <p><strong>Date de publication :</strong> {{ book.publicationDate ? book.publicationDate|date('d/m/Y') : '—' }}</p>
-<p><strong>Auteur :</strong> {{ book.author.username }}</p>
+<p><strong>Auteur :</strong> {{ book.author ? book.author.username : '—' }}</p>
 
-<a href="{{ path('app_book_index') }}">⬅ Retour</a>
+<a href="{{ path('app_book_list') }}">⬅ Retour</a>
 {% endblock %}

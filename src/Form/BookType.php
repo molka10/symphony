@@ -9,6 +9,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -26,16 +27,27 @@ class BookType extends AbstractType
                     'Science-Fiction' => 'Science-Fiction',
                     'Mystery' => 'Mystery',
                     'Autobiography' => 'Autobiography',
+                    'Romance' => 'Romance',
                 ],
             ])
-            ->add('publication_date', DateType::class, [
+            ->add('publicationDate', DateType::class, [
                 'label' => 'Date de publication',
                 'widget' => 'single_text',
                 'required' => false,
             ])
             ->add('author', EntityType::class, [
+    'class' => Author::class,
+    'choice_label' => 'username', // ou 'name' si ton entité Author a une propriété 'name'
+    'label' => 'Auteur',
+])
+
+            ->add('enabled', CheckboxType::class, [
+                'label' => 'Actif',
+                'required' => false,
+            ])
+            ->add('author', EntityType::class, [
                 'class' => Author::class,
-                'choice_label' => 'username',
+                'choice_label' => 'username', // ou 'name' selon ce que tu veux afficher
                 'label' => 'Auteur',
             ]);
     }

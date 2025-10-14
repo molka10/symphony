@@ -4,11 +4,11 @@ namespace App\Form;
 
 use App\Entity\Author;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\EmailType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
 
 class AuthorType extends AbstractType
 {
@@ -16,13 +16,17 @@ class AuthorType extends AbstractType
     {
         $builder
             ->add('username', TextType::class, [
-                'label' => 'Nom de l\'auteur',
+                'label' => 'Nom',
             ])
             ->add('email', EmailType::class, [
-                'label' => 'Adresse email',
+                'label' => 'Email',
             ])
             ->add('age', IntegerType::class, [
-                'label' => 'Âge',
+                'label' => 'Age',
+            ])
+            ->add('nbBooks', IntegerType::class, [
+                'label' => 'Nombre de livres',
+                'required' => true,
             ]);
     }
 

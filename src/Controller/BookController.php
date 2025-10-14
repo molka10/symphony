@@ -3,93 +3,142 @@
 namespace App\Controller;
 
 use App\Entity\Book;
-use App\Entity\Author;
 use App\Form\BookType;
 use App\Repository\BookRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/book')]
-class BookController extends AbstractController
+#[Route('/books')]
+final class BookController extends AbstractController
 {
-    #[Route('/', name: 'app_book_index')]
-    public function index(BookRepository $bookRepository): Response
+    // -------------------- Liste des livres --------------------
+    #[Route('', name: 'app_book_list')]
+    public function index(BookRepository $bookRepo): Response
     {
-        // Afficher uniquement les livres publiés
-        $books = $bookRepository->findBy(['published' => true]);
+        $books = $bookRepo->findBy([], ['publicationDate' => 'DESC']);
 
-        // Compter publiés et non publiés
-        $nbPublished = count($bookRepository->findBy(['published' => true]));
-        $nbUnpublished = count($bookRepository->findBy(['published' => false]));
+        // Exemple : nombre de livres Romance
+        $romanceCount = $bookRepo->countRomanceBooks();
 
         return $this->render('book/index.html.twig', [
             'books' => $books,
-            'nbPublished' => $nbPublished,
-            'nbUnpublished' => $nbUnpublished,
+            'romanceCount' => $romanceCount,
         ]);
     }
 
+    // -------------------- Nouveau livre --------------------
     #[Route('/new', name: 'app_book_new')]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $book = new Book();
-        $book->setPublished(true); // Par défaut publié
+        $book->setEnabled(true);
 
         $form = $this->createForm(BookType::class, $book);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Incrémenter le nombre de livres de l'auteur choisi
-            $author = $book->getAuthor();
-            if ($author) {
-                $author->setNbBooks(($author->getNbBooks() ?? 0) + 1);
-            }
-
             $em->persist($book);
             $em->flush();
 
-            return $this->redirectToRoute('app_book_index');
+            $this->addFlash('success', 'Livre ajouté ✅');
+            return $this->redirectToRoute('app_book_list');
         }
 
         return $this->render('book/new.html.twig', [
-            'form' => $form,
+            'form' => $form->createView(),
         ]);
     }
 
-    #[Route('/{id}', name: 'app_book_show')]
-    public function show(Book $book): Response
+    // -------------------- Modifier un livre --------------------
+    #[Route('/{id}/edit', name: 'app_book_edit')]
+    public function edit(int $id, Request $request, EntityManagerInterface $em, BookRepository $bookRepo): Response
     {
+        $book = $bookRepo->find($id);
+        if (!$book) {
+            throw $this->createNotFoundException('Livre non trouvé.');
+        }
+
+        $form = $this->createForm(BookType::class, $book);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+            $this->addFlash('success', 'Livre modifié ✅');
+            return $this->redirectToRoute('app_book_list');
+        }
+
+        return $this->render('book/edit.html.twig', [
+            'form' => $form->createView(),
+            'book' => $book,
+        ]);
+    }
+
+    // -------------------- Supprimer un livre --------------------
+    #[Route('/{id}/delete', name: 'app_book_delete', methods: ['POST'])]
+    public function delete(int $id, Request $request, EntityManagerInterface $em, BookRepository $bookRepo): Response
+    {
+        $book = $bookRepo->find($id);
+        if (!$book) {
+            throw $this->createNotFoundException('Livre non trouvé.');
+        }
+
+        if (!$this->isCsrfTokenValid('delete'.$book->getId(), $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $em->remove($book);
+        $em->flush();
+
+        $this->addFlash('danger', 'Livre supprimé ❌');
+        return $this->redirectToRoute('app_book_list');
+    }
+
+    // -------------------- Détails d’un livre --------------------
+    #[Route('/{id<\d+>}', name: 'app_book_show')]
+    public function show(int $id, BookRepository $bookRepo): Response
+    {
+        $book = $bookRepo->find($id);
+        if (!$book) {
+            throw $this->createNotFoundException('Livre non trouvé.');
+        }
+
         return $this->render('book/show.html.twig', [
             'book' => $book,
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_book_edit')]
-    public function edit(Request $request, Book $book, EntityManagerInterface $em): Response
+    // -------------------- Supprimer tous les livres non publiés --------------------
+    #[Route('/delete-unpublished', name: 'app_book_delete_unpublished')]
+    public function deleteUnpublishedBooks(EntityManagerInterface $em, BookRepository $bookRepo): Response
     {
-        $form = $this->createForm(BookType::class, $book);
-        $form->handleRequest($request);
+        $books = $bookRepo->findBy(['enabled' => false]);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->flush();
-            return $this->redirectToRoute('app_book_index');
+        foreach ($books as $book) {
+            $em->remove($book);
         }
 
-        return $this->render('book/edit.html.twig', [
-            'form' => $form,
-            'book' => $book,
-        ]);
-    }
-
-    #[Route('/{id}/delete', name: 'app_book_delete')]
-    public function delete(Book $book, EntityManagerInterface $em): Response
-    {
-        $em->remove($book);
         $em->flush();
 
-        return $this->redirectToRoute('app_book_index');
+        $this->addFlash('success', count($books) . ' livre(s) non publié(s) ont été supprimé(s).');
+        return $this->redirectToRoute('app_book_list');
+    }
+
+    // -------------------- Livres entre deux dates --------------------
+    #[Route('/between-dates', name: 'app_book_between_dates')]
+    public function booksBetweenDates(BookRepository $bookRepo): Response
+    {
+        $start = new \DateTime('2014-01-01');
+        $end = new \DateTime('2018-12-31');
+
+        $books = $bookRepo->findBooksBetweenDates($start, $end);
+
+        return $this->render('book/between_dates.html.twig', [
+            'books' => $books,
+            'start' => $start,
+            'end' => $end,
+        ]);
     }
 }

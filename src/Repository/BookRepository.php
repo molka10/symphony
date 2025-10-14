@@ -16,28 +16,46 @@ class BookRepository extends ServiceEntityRepository
         parent::__construct($registry, Book::class);
     }
 
-    //    /**
-    //     * @return Book[] Returns an array of Book objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('b')
-    //            ->andWhere('b.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('b.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    // -------------------- 1️⃣ Nombre de livres Romance --------------------
+    public function countRomanceBooks(): int
+    {
+        return (int) $this->createQueryBuilder('b')
+            ->select('COUNT(b.id)')
+            ->where('b.category = :cat')
+            ->setParameter('cat', 'Romance')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 
-    //    public function findOneBySomeField($value): ?Book
-    //    {
-    //        return $this->createQueryBuilder('b')
-    //            ->andWhere('b.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    // -------------------- 2️⃣ Livres publiés entre deux dates --------------------
+    public function findBooksBetweenDates(\DateTimeInterface $start, \DateTimeInterface $end): array
+    {
+        return $this->createQueryBuilder('b')
+            ->where('b.publicationDate BETWEEN :start AND :end')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->orderBy('b.publicationDate', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    // -------------------- 3️⃣ Livres publiés (enabled = true) --------------------
+    public function findPublishedBooks(): array
+    {
+        return $this->createQueryBuilder('b')
+            ->where('b.enabled = true')
+            ->orderBy('b.publicationDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    // -------------------- 4️⃣ Supprimer les livres non publiés --------------------
+    public function deleteUnpublishedBooks(): int
+    {
+        $qb = $this->_em->createQueryBuilder()
+            ->delete(Book::class, 'b')
+            ->where('b.enabled = false');
+
+        return $qb->getQuery()->execute();
+    }
 }
