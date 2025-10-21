@@ -4,8 +4,8 @@ namespace App\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AuthorSearchType extends AbstractType
 {
@@ -13,17 +13,13 @@ class AuthorSearchType extends AbstractType
     {
         $builder
             ->add('minBooks', IntegerType::class, [
-                'label' => 'Nombre minimum de livres',
                 'required' => false,
+                'label' => 'Min nb livres',
             ])
             ->add('maxBooks', IntegerType::class, [
-                'label' => 'Nombre maximum de livres',
                 'required' => false,
-            ]);
-    }
-
-    public function configureOptions(OptionsResolver $resolver): void
-    {
-        $resolver->setDefaults([]);
+                'label' => 'Max nb livres',
+            ])
+            ->add('search', SubmitType::class, ['label' => 'Filtrer']);
     }
 }
