@@ -16,6 +16,64 @@ class BookRepository extends ServiceEntityRepository
         parent::__construct($registry, Book::class);
     }
 
+
+
+
+
+    // src/Repository/BookRepository.php
+public function searchBookByRef(string $ref): ?Book
+{
+    return $this->createQueryBuilder('b')
+        ->andWhere('b.ref = :ref')
+        ->setParameter('ref', $ref)
+        ->getQuery()
+        ->getOneOrNullResult();
+}
+
+
+public function booksListByAuthors(): array
+{
+    return $this->createQueryBuilder('b')
+        ->leftJoin('b.author', 'a')->addSelect('a')
+        ->orderBy('a.username', 'ASC')
+        ->addOrderBy('b.title', 'ASC')
+        ->getQuery()
+        ->getResult();
+}
+
+
+
+
+
+public function publishedBefore2023WithProlificAuthors(): array
+{
+    return $this->createQueryBuilder('b')
+        ->leftJoin('b.author', 'a')->addSelect('a')
+        ->andWhere('b.published = :pub')->setParameter('pub', true)
+        ->andWhere('b.publishedAt < :cutoff')->setParameter('cutoff', new \DateTime('2023-01-01'))
+        ->andWhere('a.nbBooks > :min')->setParameter('min', 10)
+        ->orderBy('b.publishedAt', 'DESC')
+        ->getQuery()
+        ->getResult();
+}
+
+
+
+
+
+public function recategorizeSciFiToRomance(): int
+{
+    return $this->_em->createQueryBuilder()
+        ->update(Book::class, 'b')
+        ->set('b.category', ':new')
+        ->where('b.category = :old')
+        ->setParameter('new', 'Romance')
+        ->setParameter('old', 'Science-Fiction')
+        ->getQuery()
+        ->execute(); // renvoie le nombre de lignes MAJ
+}
+
+
     // -------------------- 1️⃣ Nombre de livres Romance --------------------
     public function countRomanceBooks(): int
     {

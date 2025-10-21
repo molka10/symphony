@@ -11,11 +11,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/books')]
+
 final class BookController extends AbstractController
 {
     // -------------------- Liste des livres --------------------
-    #[Route('', name: 'app_book_list')]
+    #[Route('/books', name: 'app_book_list')]
     public function index(BookRepository $bookRepo): Response
     {
         $books = $bookRepo->findBy([], ['publicationDate' => 'DESC']);
