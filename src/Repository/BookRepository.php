@@ -63,14 +63,15 @@ public function publishedBefore2023WithProlificAuthors(): array
 
 public function recategorizeSciFiToRomance(): int
 {
-    return $this->_em->createQueryBuilder()
+    return $this->getEntityManager()
+        ->createQueryBuilder()
         ->update(Book::class, 'b')
         ->set('b.category', ':new')
         ->where('b.category = :old')
         ->setParameter('new', 'Romance')
         ->setParameter('old', 'Science-Fiction')
         ->getQuery()
-        ->execute(); // renvoie le nombre de lignes MAJ
+        ->execute();
 }
 
 
